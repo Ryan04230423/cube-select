@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CUBE 卡消費方案智慧判斷器 | 2026 權益攻略</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Inter & Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            cathay: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#00A859',
+              600: '#008f4c',
+              700: '#047857',
+            },
+          },
+          boxShadow: {
+            soft: '0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 8px -2px rgba(0, 0, 0, 0.03)',
+            card: '0 10px 30px -5px rgba(0, 168, 89, 0.08), 0 4px 12px -4px rgba(0, 0, 0, 0.04)',
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-cathay-100 selection:text-cathay-700">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Top Header & Personalization Bar -->
+  <header class="bg-white border-b border-slate-200/80 sticky top-0 z-40 backdrop-blur-md bg-white/95">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3.5">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <!-- Brand Logo & Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cathay-500 to-emerald-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <i data-lucide="credit-card" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">CUBE 卡消費方案智慧判斷器</h1>
+              <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-cathay-50 text-cathay-600 border border-cathay-200">2026 最新權益</span>
+            </div>
+            <p class="text-xs text-slate-500">輸入購物平台或通路，秒查最佳切換方案與小樹點回饋</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs (Desktop) -->
+        <nav class="flex items-center bg-slate-100 p-1 rounded-xl self-start md:self-auto w-full md:w-auto">
+          <button onclick="switchTab('search')" id="tab-btn-search" class="tab-btn flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-cathay-600 shadow-sm">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span>智慧判斷</span>
+          </button>
+          <button onclick="switchTab('calculator')" id="tab-btn-calculator" class="tab-btn flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all text-slate-600 hover:text-slate-900">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+            <span>今日多筆試算</span>
+            <span id="calc-badge" class="hidden ml-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-cathay-500 text-white">0</span>
+          </button>
+          <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all text-slate-600 hover:text-slate-900">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            <span>方案總覽</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Personalization Settings Strip -->
+    <div class="bg-gradient-to-r from-cathay-50/90 via-emerald-50/60 to-slate-50 border-t border-cathay-100/80">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
+        <!-- Level Selector -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold text-slate-600 flex items-center gap-1 mr-1">
+            <i data-lucide="award" class="w-3.5 h-3.5 text-cathay-600"></i>
+            權益等級：
+          </span>
+          <div class="inline-flex bg-white rounded-lg p-0.5 border border-slate-200/90 shadow-sm">
+            <button onclick="setLevel(1)" id="lvl-btn-1" class="lvl-btn px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-600 hover:text-slate-900">
+              Level 1 <span class="opacity-80 font-normal">(2%)</span>
+            </button>
+            <button onclick="setLevel(2)" id="lvl-btn-2" class="lvl-btn px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all bg-cathay-500 text-white shadow-sm">
+              Level 2 <span class="opacity-90 font-normal">(3%)</span>
+            </button>
+            <button onclick="setLevel(3)" id="lvl-btn-3" class="lvl-btn px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all text-slate-600 hover:text-slate-900">
+              Level 3 <span class="opacity-80 font-normal">(3.3%)</span>
+            </button>
+          </div>
+          <span id="level-desc" class="text-[11px] text-slate-500 hidden sm:inline">本行帳戶扣繳 / CUBE App 繳費</span>
+        </div>
+
+        <!-- Special Toggles -->
+        <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+          <!-- Birthday Toggle -->
+          <label class="inline-flex items-center gap-2 cursor-pointer select-none group">
+            <div class="relative">
+              <input type="checkbox" id="toggle-birthday" class="sr-only peer" onchange="toggleSpecial('birthday', this.checked)" />
+              <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-fuchsia-500"></div>
+            </div>
+            <span class="text-xs font-semibold text-slate-700 group-hover:text-slate-900 flex items-center gap-1">
+              <span>🎂</span> 當月壽星（慶生月）
+            </span>
+          </label>
+
+          <!-- Kids Club Toggle -->
+          <label class="inline-flex items-center gap-2 cursor-pointer select-none group">
+            <div class="relative">
+              <input type="checkbox" id="toggle-kids" class="sr-only peer" onchange="toggleSpecial('kids', this.checked)" />
+              <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-lime-600"></div>
+            </div>
+            <span class="text-xs font-semibold text-slate-700 group-hover:text-slate-900 flex items-center gap-1">
+              <span>🧸</span> 已解鎖童樂匯
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+    <!-- ==================== TAB 1: SMART SEARCH ==================== -->
+    <section id="section-search" class="space-y-6">
+      <!-- Search Hero Card -->
+      <div class="bg-white rounded-2xl p-5 sm:p-7 shadow-soft border border-slate-200/70">
+        <div class="max-w-2xl mx-auto text-center mb-5">
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 mb-1.5">今天要在哪裡刷 CUBE 卡？</h2>
+          <p class="text-sm text-slate-500">支援中英文名稱與簡稱模糊搜尋，即時找出最高回饋方案與避雷重點</p>
+        </div>
+
+        <!-- Search Input & Dropdown -->
+        <div class="max-w-2xl mx-auto relative">
+          <div class="relative flex items-center">
+            <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none"></i>
+            <input
+              type="text"
+              id="search-input"
+              autocomplete="off"
+              placeholder="輸入通路名稱，例如：蝦皮、momo、全聯、Uber Eats、ChatGPT、Amazon..."
+              class="w-full pl-12 pr-24 py-3.5 sm:py-4 text-base bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-cathay-500 focus:outline-none transition-all placeholder:text-slate-400 text-slate-800 font-medium"
+            />
+            <button
+              id="clear-search-btn"
+              onclick="clearSearch()"
+              class="hidden absolute right-20 p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
+              aria-label="清除搜尋"
+            >
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <button
+              onclick="executeSearch()"
+              class="absolute right-2 px-4 py-2 bg-cathay-500 hover:bg-cathay-600 active:scale-95 text-white text-sm font-bold rounded-xl transition-all shadow-sm"
+            >
+              判斷
+            </button>
+          </div>
+
+          <!-- Autocomplete Dropdown -->
+          <div id="search-dropdown" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-30 max-h-72 overflow-y-auto">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Quick Select Popular Merchants -->
+        <div class="max-w-3xl mx-auto mt-5">
+          <div class="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-400 mb-2.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cathay-500"></i>
+            <span>熱門購物平台一鍵快選</span>
+          </div>
+          <div id="quick-picks" class="flex flex-wrap justify-center gap-2">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Result Container -->
+      <div id="search-result-area" class="hidden space-y-4">
+        <!-- Populated dynamically by JS -->
+      </div>
+
+      <!-- Empty State / Helpful Tips (shown before first search) -->
+      <div id="search-empty-state" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/70 shadow-soft">
+          <div class="w-9 h-9 rounded-xl bg-cathay-50 text-cathay-600 flex items-center justify-center mb-3">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-sm mb-1">當日 23:59 前完成切換</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">CUBE 卡以「消費日」認定權益方案，刷卡當天晚上 23:59 前在 CUBE App 切換完成即可，每日限切換一次。</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/70 shadow-soft">
+          <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-sm mb-1">注意分期與行動支付地雷</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">特約商店分期付款僅享 0.3% 回饋；綁定 LINE Pay、街口等第三方支付通常不計入指定通路（全支付方案除外）。</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/70 shadow-soft cursor-pointer hover:border-cathay-300 transition-colors" onclick="switchTab('calculator')">
+          <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+            <i data-lucide="calculator" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-sm mb-1 flex items-center gap-1">
+            今天要刷好幾筆？ <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-blue-500"></i>
+          </h3>
+          <p class="text-xs text-slate-500 leading-relaxed">因為一天只能切一個方案，點擊使用「今日多筆試算」自動算出今天切哪個方案總點數最高！</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: MULTI-TRANSACTION CALCULATOR ==================== -->
+    <section id="section-calculator" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-soft border border-slate-200/70">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+              <i data-lucide="calculator" class="w-5 h-5 text-cathay-500"></i>
+              今日多筆消費最佳方案計算機
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">CUBE 卡一天只能切換一次方案，輸入今天所有預計消費，自動精算總回饋最高選項！</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="loadSampleTransactions()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-cathay-50 text-cathay-700 hover:bg-cathay-100 border border-cathay-200 transition-colors flex items-center gap-1.5">
+              <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+              載入範例
+            </button>
+            <button onclick="clearTransactions()" class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+              全部清空
+            </button>
+          </div>
+        </div>
+
+        <!-- Add Transaction Form -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start mb-6">
+          <div class="sm:col-span-6 relative">
+            <label class="block text-xs font-bold text-slate-600 mb-1.5">消費通路 / 購物平台</label>
+            <input
+              type="text"
+              id="calc-merchant-input"
+              autocomplete="off"
+              placeholder="例如：蝦皮購物、康是美、全聯..."
+              class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-cathay-500 focus:outline-none"
+            />
+            <div id="calc-dropdown" class="hidden absolute left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-30 max-h-56 overflow-y-auto"></div>
+          </div>
+          <div class="sm:col-span-4">
+            <label class="block text-xs font-bold text-slate-600 mb-1.5">消費金額 (NT$)</label>
+            <input
+              type="number"
+              id="calc-amount-input"
+              min="1"
+              step="100"
+              value="1000"
+              placeholder="輸入金額"
+              class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-cathay-500 focus:outline-none font-semibold"
+            />
+          </div>
+          <div class="sm:col-span-2 sm:pt-6">
+            <button
+              onclick="addTransaction()"
+              class="w-full py-2.5 px-4 bg-cathay-500 hover:bg-cathay-600 active:scale-95 text-white text-sm font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-1"
+            >
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              新增
+            </button>
+          </div>
+        </div>
+
+        <!-- Transaction List -->
+        <div id="calc-list-container" class="space-y-2.5">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Calculation Results Panel -->
+      <div id="calc-results-container" class="hidden space-y-4">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: 2026 PLANS OVERVIEW ==================== -->
+    <section id="section-overview" class="hidden space-y-5">
+      <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-soft border border-slate-200/70">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">2026 CUBE 卡方案通路總覽</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">點擊任一通路標籤即可直接查看詳細回饋試算與注意事項</p>
+          </div>
+        </div>
+
+        <!-- Filter Pills -->
+        <div id="overview-filters" class="flex flex-wrap gap-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Plans Directory Cards -->
+      <div id="overview-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer Disclaimer -->
+  <footer class="bg-white border-t border-slate-200/80 mt-auto">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-5 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="text-xs text-slate-500 leading-relaxed max-w-3xl">
+        <strong class="text-slate-700">免責聲明：</strong>本工具資料係依 2026 年國泰世華 CUBE 卡公開權益資訊整理，回饋小樹點採單筆消費四捨五入估算（僅供參考）。實際指定通路認定、特店請款名稱、排除項目、加碼條件與活動期限，請以<span class="text-cathay-600 font-semibold">國泰世華銀行官網</span>及 <span class="text-cathay-600 font-semibold">CUBE App</span> 最新公告為準。
+      </div>
+      <div class="text-[11px] text-slate-400 shrink-0 font-medium">
+        CUBE 卡權益智慧判斷器 · 2026 版
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic & Data -->
+  <script>
+    // =========================================================================
+    // 1. STATE MANAGEMENT
+    // =========================================================================
+    const state = {
+      level: 2, // 1: 2%, 2: 3% (default), 3: 3.3%
+      isBirthday: false,
+      isKids: false,
+      activeTab: 'search',
+      currentQuery: '',
+      currentAmount: 1000,
+      overviewFilter: 'all',
+      transactions: [], // { id, query, merchantId, amount }
+    };
+
+    const LEVEL_RATES = { 1: 2.0, 2: 3.0, 3: 3.3 };
+    const LEVEL_DESCS = {
+      1: '持有 CUBE 正卡（基本等級）',
+      2: '本行帳戶扣繳 / CUBE App 繳費',
+      3: '國泰世華財富管理貴賓',
+    };
+
+    // =========================================================================
+    // 2. PLAN DEFINITIONS (2026 CUBE CARD)
+    // =========================================================================
+    const PLANS = {
+      digital: {
+        id: 'digital',
+        name: '玩數位',
+        icon: 'laptop',
+        emoji: '💻',
+        type: 'dynamic', // Uses Level 1/2/3 rate
+        desc: '網購電商、國際電商、數位串流、AI 與生產力工具',
+        badgeBg: 'bg-blue-50',
+        badgeText: 'text-blue-700',
+        badgeBorder: 'border-blue-200',
+        accent: 'bg-blue-600',
+        ring: 'ring-blue-500',
+      },
+      shopping: {
+        id: 'shopping',
+        name: '樂饗購',
+        icon: 'shopping-bag',
+        emoji: '🛍️',
+        type: 'dynamic',
+        desc: '國內指定百貨、藥妝、外送平台、國內餐飲',
+        badgeBg: 'bg-rose-50',
+        badgeText: 'text-rose-700',
+        badgeBorder: 'border-rose-200',
+        accent: 'bg-rose-500',
+        ring: 'ring-rose-500',
+      },
+      travel: {
+        id: 'travel',
+        name: '趣旅行',
+        icon: 'plane',
+        emoji: '✈️',
+        type: 'dynamic',
+        desc: '旅遊訂房平台、高鐵與交通租車、航空、海外實體消費',
+        badgeBg: 'bg-sky-50',
+        badgeText: 'text-sky-700',
+        badgeBorder: 'border-sky-200',
+        accent: 'bg-sky-500',
+        ring: 'ring-sky-500',
+      },
+      select: {
+        id: 'select',
+        name: '集精選',
+        icon: 'store',
+        emoji: '🛒',
+        type: 'fixed',
+        fixedRate: 2.0,
+        desc: '量販超市、四大超商指定門市、IKEA、加油充電停車',
+        badgeBg: 'bg-emerald-50',
+        badgeText: 'text-emerald-700',
+        badgeBorder: 'border-emerald-200',
+        accent: 'bg-emerald-600',
+        ring: 'ring-emerald-500',
+      },
+      pxpayplus: {
+        id: 'pxpayplus',
+        name: '全支付',
+        icon: 'smartphone',
+        emoji: '📱',
+        type: 'fixed',
+        fixedRate: 2.0,
+        desc: '全支付綁定 CUBE 卡於全聯、大全聯及國內合作通路消費',
+        badgeBg: 'bg-purple-50',
+        badgeText: 'text-purple-700',
+        badgeBorder: 'border-purple-200',
+        accent: 'bg-purple-600',
+        ring: 'ring-purple-500',
+      },
+      formosa: {
+        id: 'formosa',
+        name: '台塑家',
+        icon: 'fuel',
+        emoji: '⛽',
+        type: 'fixed',
+        fixedRate: 2.0,
+        desc: '台塑購物網、台塑生醫/長庚生技、台塑系加油站、三大超商',
+        badgeBg: 'bg-amber-50',
+        badgeText: 'text-amber-700',
+        badgeBorder: 'border-amber-200',
+        accent: 'bg-amber-500',
+        ring: 'ring-amber-500',
+      },
+      birthday: {
+        id: 'birthday',
+        name: '慶生月',
+        icon: 'cake',
+        emoji: '🎂',
+        type: 'conditional',
+        conditionKey: 'isBirthday',
+        desc: '當月壽星專屬！指定百貨/旅遊/外送 3.5%，指定餐廳/KTV/遊戲 10%',
+        badgeBg: 'bg-fuchsia-50',
+        badgeText: 'text-fuchsia-700',
+        badgeBorder: 'border-fuchsia-200',
+        accent: 'bg-fuchsia-600',
+        ring: 'ring-fuchsia-500',
+      },
+      kids: {
+        id: 'kids',
+        name: '童樂匯',
+        icon: 'baby',
+        emoji: '🧸',
+        type: 'conditional',
+        conditionKey: 'isKids',
+        fixedRate: 5.0,
+        desc: '已解鎖親子客群專屬！指定母嬰用品、親子樂園、親子餐廳 5%',
+        badgeBg: 'bg-lime-50',
+        badgeText: 'text-lime-700',
+        badgeBorder: 'border-lime-200',
+        accent: 'bg-lime-600',
+        ring: 'ring-lime-500',
+      },
+    };
+
+    // =========================================================================
+    // 3. COMPREHENSIVE 2026 MERCHANTS DATABASE
+    // Each merchant can map to one or more plans with specific rates & notes.
+    // =========================================================================
+    const MERCHANTS = [
+      // --- 玩數位: 國內網購 ---
+      {
+        id: 'shopee',
+        name: '蝦皮購物',
+        aliases: ['shopee', '蝦皮', '蝦皮商城', '蝦皮超市'],
+        category: '國內網購',
+        plans: [{ planId: 'digital', note: '限蝦皮購物平台一般刷卡，不含分期付款與電子票券/儲值類商品。' }],
+      },
+      {
+        id: 'momo',
+        name: 'momo 購物網',
+        aliases: ['momo', '富邦momo', '摩天商城', 'momo購物'],
+        category: '國內網購',
+        plans: [{ planId: 'digital', note: '限一次付清；分期付款僅享 0.3% 回饋。' }],
+      },
+      {
+        id: 'pchome',
+        name: 'PChome 24h 購物',
+        aliases: ['pchome', 'pchome24h', '24h', '網路家庭'],
+        category: '國內網購',
+        plans: [{ planId: 'digital', note: '⚠️ 不含儲值及電子票券類商品，且不含分期付款。' }],
+      },
+      {
+        id: 'treebuy',
+        name: '小樹購',
+        aliases: ['小樹購', 'treebuy', '國泰小樹購'],
+        category: '國內網購',
+        plans: [{ planId: 'digital', note: '⚠️ 不含電子票券類商品。' }],
+      },
+      // --- 玩數位: 國際電商 ---
+      {
+        id: 'coupang',
+        name: 'Coupang 酷澎 (台灣)',
+        aliases: ['coupang', '酷澎', '火箭速配', '火箭跨境'],
+        category: '國際電商',
+        plans: [{ planId: 'digital', note: '適用 Coupang 酷澎台灣站點消費；若屬海外請款可能另收 1.5% 國外交易手續費。' }],
+      },
+      {
+        id: 'taobao',
+        name: '淘寶 / 天貓 (Taobao / Tmall)',
+        aliases: ['taobao', 'tmall', '淘寶', '天貓', '淘寶網'],
+        category: '國際電商',
+        plans: [{ planId: 'digital', note: '請留意海外刷卡 1.5% 手續費及平台刷卡手續費。' }],
+      },
+      // --- 玩數位: 數位串流 ---
+      {
+        id: 'apple_media',
+        name: 'Apple 媒體服務',
+        aliases: ['app store', 'icloud', 'apple music', 'apple tv', 'apple 媒體', 'itunes', 'ios課金'],
+        category: '數位串流',
+        plans: [{ planId: 'digital', note: '⚠️ 僅限 App Store、iCloud、Apple Music 等數位內容扣款；「不含」Apple Store 官網或直營店購買 iPhone/Mac 等硬體！' }],
+      },
+      {
+        id: 'google_play',
+        name: 'Google Play',
+        aliases: ['google play', 'googleplay', 'play商店', 'google one', '安卓課金'],
+        category: '數位串流',
+        plans: [{ planId: 'digital', note: '適用 Google Play 商店應用程式購買、訂閱與內購。' }],
+      },
+      {
+        id: 'netflix',
+        name: 'Netflix',
+        aliases: ['netflix', '網飛'],
+        category: '數位串流',
+        plans: [{ planId: 'digital', note: '官網直接綁卡訂閱享玩數位回饋。' }],
+      },
+      {
+        id: 'disney_plus',
+        name: 'Disney+',
+        aliases: ['disney', 'disney+', '迪士尼串流'],
+        category: '數位串流',
+        plans: [{ planId: 'digital', note: '官網直接綁卡訂閱享玩數位回饋。' }],
+      },
+      {
+        id: 'spotify',
+        name: 'Spotify',
+        aliases: ['spotify', '音樂串流'],
+        category: '數位串流',
+        plans: [{ planId: 'digital', note: '官網直接綁卡訂閱享玩數位回饋（請留意海外交易手續費）。' }],
+      },
+      {
+        id: 'youtube_premium',
+        name: 'YouTube Premium',
+        aliases: ['youtube', 'yt', 'youtube premium', 'yt會員', 'youtube music'],
+        category: '數位串流',
+        plans: [{ planId: 'digital', note: '透過 YouTube 官網或 Google Play 訂閱皆適用。' }],
+      },
+      {
+        id: 'max',
+        name: 'Max (原 HBO GO)',
+        aliases: ['max', 'hbo', 'hbo max'],
+        category: '數位串流',
+        plans: [{ planId: 'digital', note: '適用 Max 影音串流訂閱扣款。' }],
+      },
+      // --- 玩數位: AI 與生產力工具 ---
+      {
+        id: 'chatgpt',
+        name: 'ChatGPT (OpenAI)',
+        aliases: ['chatgpt', 'openai', 'gpt', 'gpt plus'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 ChatGPT Plus / Pro 訂閱及 OpenAI API 扣款（屬外幣消費需計 1.5% 國外交易手續費）。' }],
+      },
+      {
+        id: 'claude',
+        name: 'Claude (Anthropic)',
+        aliases: ['claude', 'anthropic'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Claude Pro 訂閱與 API 扣款。' }],
+      },
+      {
+        id: 'gemini',
+        name: 'Gemini (Google AI)',
+        aliases: ['gemini', 'google ai', 'gemini advanced'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Google Gemini 訂閱方案扣款。' }],
+      },
+      {
+        id: 'cursor',
+        name: 'Cursor AI',
+        aliases: ['cursor', 'cursor ai'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Cursor 開發工具訂閱。' }],
+      },
+      {
+        id: 'canva',
+        name: 'Canva',
+        aliases: ['canva', '設計軟體'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Canva Pro 訂閱扣款。' }],
+      },
+      {
+        id: 'notion',
+        name: 'Notion',
+        aliases: ['notion', '筆記軟體'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Notion 付費方案與 Notion AI 訂閱。' }],
+      },
+      {
+        id: 'perplexity',
+        name: 'Perplexity AI',
+        aliases: ['perplexity', 'perplexity ai'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Perplexity Pro 訂閱扣款。' }],
+      },
+      {
+        id: 'duolingo',
+        name: 'Duolingo (多鄰國)',
+        aliases: ['duolingo', '多鄰國'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Duolingo Super / Max 訂閱。' }],
+      },
+      {
+        id: 'gamma',
+        name: 'Gamma AI',
+        aliases: ['gamma', 'gamma ai', '簡報ai'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Gamma 付費方案訂閱。' }],
+      },
+      {
+        id: 'speak',
+        name: 'Speak 英文口說',
+        aliases: ['speak', 'speak app'],
+        category: 'AI 與生產力工具',
+        plans: [{ planId: 'digital', note: '適用 Speak App 付費訂閱。' }],
+      },
+
+      // --- 樂饗購: 國內藥妝 ---
+      {
+        id: 'watsons',
+        name: '屈臣氏 (Watsons)',
+        aliases: ['屈臣氏', 'watsons', '小屈'],
+        category: '國內藥妝',
+        plans: [{ planId: 'shopping', note: '含屈臣氏實體門市、官網與 APP 消費（建議直接刷卡或 Apple Pay，勿綁 LINE Pay）。' }],
+      },
+      {
+        id: 'cosmed',
+        name: '康是美 (COSMED)',
+        aliases: ['康是美', 'cosmed', '小康'],
+        category: '國內藥妝',
+        plans: [{ planId: 'shopping', note: '適用康是美實體門市與官網；若百貨店中店請留意請款名稱。' }],
+      },
+      // --- 樂饗購: 外送平台 ---
+      {
+        id: 'ubereats',
+        name: 'Uber Eats',
+        aliases: ['uber eats', 'ubereats', '吳柏毅', '優食', '外送'],
+        category: '外送平台',
+        plans: [
+          { planId: 'shopping', note: '⚠️ 不含 Uber One 會員訂閱費。' },
+          { planId: 'birthday', customRate: 3.5, note: '🎂 當月壽星專屬 3.5%（不含 Uber One 會員費）。' },
+        ],
+      },
+      {
+        id: 'foodpanda',
+        name: 'foodpanda (富胖達)',
+        aliases: ['foodpanda', '熊貓', '熊貓外送', '富胖達'],
+        category: '外送平台',
+        plans: [{ planId: 'shopping', note: '適用 foodpanda 外送與生鮮雜貨訂單。' }],
+      },
+      // --- 樂饗購: 國內指定百貨 ---
+      {
+        id: 'skm',
+        name: '新光三越',
+        aliases: ['新光三越', 'skm', '新光', 'skm pay'],
+        category: '國內指定百貨',
+        plans: [
+          { planId: 'shopping', note: '⚠️ 不含百貨內未以百貨請款之店中櫃（如部分 UNIQLO、無印良品、超市或獨立發票餐廳）。' },
+          { planId: 'birthday', customRate: 3.5, note: '🎂 當月壽星專屬 3.5%！⚠️ 注意：慶生月不含 SKM Park Outlets。' },
+        ],
+      },
+      {
+        id: 'sogo',
+        name: '遠東 SOGO 百貨',
+        aliases: ['sogo', '遠東sogo', '忠孝sogo', '復興sogo', '巨城sogo'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '⚠️ 不含百貨內未以百貨請款之店中櫃（如 UNIQLO/無印良品等）。' }],
+      },
+      {
+        id: 'feds',
+        name: '遠東百貨 (大遠百)',
+        aliases: ['遠東百貨', '遠百', '大遠百', '板橋大遠百', '竹北遠百', '信義a13'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '⚠️ 不含百貨內未以百貨請款之店中櫃。' }],
+      },
+      {
+        id: 'taipei101',
+        name: '台北 101',
+        aliases: ['101', '台北101', 'taipei 101'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '適用台北 101 購物中心（不含未以百貨請款之獨立櫃位）。' }],
+      },
+      {
+        id: 'breeze',
+        name: '微風廣場 (微風百貨)',
+        aliases: ['微風', '微風廣場', '微風南山', '微風信義', '微風松高', 'breeze'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '適用微風各分館（不含非百貨請款櫃位）。' }],
+      },
+      {
+        id: 'uni_style',
+        name: '統一時代百貨台北店',
+        aliases: ['統一時代', '統一時代台北', '阪急'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '限統一時代百貨台北店，不含店中櫃未以百貨請款之交易。' }],
+      },
+      {
+        id: 'eslite',
+        name: '誠品生活',
+        aliases: ['誠品', '誠品生活', '誠品松菸', '誠品南西', '誠品新店', 'eslite'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '適用誠品生活實體商場（不含誠品線上網購及非誠品請款櫃位）。' }],
+      },
+      {
+        id: 'qsquare',
+        name: '京站時尚廣場',
+        aliases: ['京站', 'qsquare'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '不含店中櫃未以京站請款之櫃位。' }],
+      },
+      {
+        id: 'miramar',
+        name: '美麗華百樂園',
+        aliases: ['美麗華', 'miramar'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '不含非以美麗華請款之獨立櫃位。' }],
+      },
+      {
+        id: 'lalaport',
+        name: 'Mitsui Shopping Park LaLaport (南港/台中)',
+        aliases: ['lalaport', '三井lalaport', '台中lalaport', '南港lalaport'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '適用南港與台中 LaLaport；不含店中櫃未以商場請款之櫃位。' }],
+      },
+      {
+        id: 'mitsui_outlet',
+        name: 'MITSUI OUTLET PARK (林口/台中港/台南)',
+        aliases: ['三井outlet', 'mitsui outlet', '林口三井', '台中港三井', '台南三井'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '適用三井 Outlet 各分館（不含非商場請款櫃位）。' }],
+      },
+      {
+        id: 'hanshin',
+        name: '漢神百貨 / 漢神巨蛋',
+        aliases: ['漢神', '漢神百貨', '漢神巨蛋'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '適用漢神百貨本館與漢神巨蛋購物廣場（不含非百貨請款櫃位）。' }],
+      },
+      {
+        id: 'chungyo',
+        name: '中友百貨',
+        aliases: ['中友', '中友百貨'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '不含百貨內未以中友請款之店中櫃。' }],
+      },
+      {
+        id: 'bigcity',
+        name: '遠東巨城購物中心 (Big City)',
+        aliases: ['巨城', '遠東巨城', '新竹巨城', 'big city'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '不含非巨城請款之獨立櫃位。' }],
+      },
+      {
+        id: 'globalmall',
+        name: '環球購物中心 (Global Mall)',
+        aliases: ['環球', '環球購物中心', 'global mall', '板橋環球', '中和環球', '左營環球'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '適用環球購物中心各分店（不含非商場請款櫃位）。' }],
+      },
+      {
+        id: 'taimall',
+        name: '台茂購物中心',
+        aliases: ['台茂', 'taimall'],
+        category: '國內指定百貨',
+        plans: [{ planId: 'shopping', note: '不含非台茂請款之獨立櫃位。' }],
+      },
+      // --- 樂饗購: 國內餐飲 ---
+      {
+        id: 'domestic_dining',
+        name: '國內一般餐飲 / 手搖飲 / 早餐店',
+        aliases: ['餐廳', '國內餐飲', '吃飯', '手搖飲', '飲料店', '早餐店', '八方雲集', '星巴克', '路易莎', '咖啡廳', '小額支付'],
+        category: '國內餐飲',
+        plans: [{ planId: 'shopping', note: '涵蓋國內各類餐廳及小額支付平台餐飲（如手搖飲、早餐店、八方雲集等）。⚠️ 不含餐券購買及飯店內部分非餐飲 MCC 請款。' }],
+      },
+      {
+        id: 'mcdonalds',
+        name: '麥當勞',
+        aliases: ['麥當勞', 'mcdonalds', '老麥', '速食'],
+        category: '國內餐飲',
+        plans: [{ planId: 'shopping', note: '適用門市刷卡、點點卡儲值外之一般消費與歡樂送。⚠️ 不含餐券。' }],
+      },
+
+      // --- 趣旅行: 旅遊訂房平台 ---
+      {
+        id: 'klook',
+        name: 'Klook 客路',
+        aliases: ['klook', '客路'],
+        category: '旅遊訂房平台',
+        plans: [
+          { planId: 'travel', note: '適用 Klook 官網與 App 刷卡消費。' },
+          { planId: 'birthday', customRate: 3.5, note: '🎂 當月壽星專屬 3.5%！' },
+        ],
+      },
+      {
+        id: 'kkday',
+        name: 'KKday',
+        aliases: ['kkday'],
+        category: '旅遊訂房平台',
+        plans: [{ planId: 'travel', note: '適用 KKday 官網與 App 刷卡消費。' }],
+      },
+      {
+        id: 'agoda',
+        name: 'Agoda',
+        aliases: ['agoda', '訂房'],
+        category: '旅遊訂房平台',
+        plans: [{ planId: 'travel', note: '建議留意 Agoda 延後付款的「實際請款日」與刷卡日是否一致，以免切換方案時間錯開。' }],
+      },
+      {
+        id: 'booking',
+        name: 'Booking.com',
+        aliases: ['booking', 'booking.com'],
+        category: '旅遊訂房平台',
+        plans: [{ planId: 'travel', note: '若選擇到店付款，於海外飯店刷卡亦符合趣旅行海外實體消費。' }],
+      },
+      {
+        id: 'airbnb',
+        name: 'Airbnb',
+        aliases: ['airbnb', '民宿'],
+        category: '旅遊訂房平台',
+        plans: [{ planId: 'travel', note: '適用 Airbnb 平台刷卡預訂（請留意海外交易手續費）。' }],
+      },
+      {
+        id: 'tripcom',
+        name: 'Trip.com',
+        aliases: ['trip', 'trip.com', '攜程'],
+        category: '旅遊訂房平台',
+        plans: [{ planId: 'travel', note: '適用 Trip.com 機票、飯店與票券預訂。' }],
+      },
+      {
+        id: 'eztravel',
+        name: 'ezTravel 易遊網',
+        aliases: ['eztravel', '易遊網'],
+        category: '旅遊訂房平台',
+        plans: [{ planId: 'travel', note: '限一次付清；分期付款僅 0.3%。' }],
+      },
+      {
+        id: 'travel_agencies',
+        name: '雄獅旅遊 / 可樂旅遊 / 東南旅遊',
+        aliases: ['雄獅', '雄獅旅遊', '可樂旅遊', '東南旅遊', '旅行社'],
+        category: '旅遊訂房平台',
+        plans: [{ planId: 'travel', note: '適用指定國內旅行社一次付清消費。' }],
+      },
+      // --- 趣旅行: 交通與租車 ---
+      {
+        id: 'thsr',
+        name: '台灣高鐵',
+        aliases: ['高鐵', '台灣高鐵', 'thsr', 't-ex'],
+        category: '交通與租車',
+        plans: [{ planId: 'travel', note: '適用高鐵車站售票窗口、自動售票機、官網與 T-EX 行動購票 App。' }],
+      },
+      {
+        id: 'uber_ride',
+        name: 'Uber / Grab / yoxi / 台灣大車隊',
+        aliases: ['uber', 'grab', 'yoxi', '台灣大車隊', '55688', '計程車', '叫車'],
+        category: '交通與租車',
+        plans: [{ planId: 'travel', note: '適用指定叫車平台直接綁卡付款（Uber 叫車歸趣旅行，Uber Eats 外送歸樂饗購，請勿混淆！）。' }],
+      },
+      {
+        id: 'car_rental',
+        name: 'iRent / 和運租車 / 格上租車',
+        aliases: ['irent', '和運', '和運租車', '格上', '格上租車', '租車'],
+        category: '交通與租車',
+        plans: [{ planId: 'travel', note: '適用指定租車通路消費。' }],
+      },
+      {
+        id: 'apple_transit',
+        name: 'Apple 錢包指定交通卡 (Suica / PASMO / ICOCA)',
+        aliases: ['suica', 'pasmo', 'icoca', '西瓜卡', 'apple pay交通卡', '日本交通卡'],
+        category: '交通與租車',
+        plans: [{ planId: 'travel', note: '直接在 iPhone Apple 錢包儲值 Suica / PASMO / ICOCA 享趣旅行高回饋！' }],
+      },
+      // --- 趣旅行: 航空公司 ---
+      {
+        id: 'airlines',
+        name: '指定航空公司 (長榮/華航/星宇/國泰/虎航/日航/ANA/新航等)',
+        aliases: ['長榮', '長榮航空', '華航', '中華航空', '星宇', '星宇航空', '國泰航空', '虎航', '台灣虎航', '日本航空', 'jal', 'ana', '全日空', '新加坡航空', '機票', '航空'],
+        category: '航空公司',
+        plans: [{ planId: 'travel', note: '適用各大指定航空公司官網購票與機上消費。' }],
+      },
+      // --- 趣旅行: 海外實體消費 ---
+      {
+        id: 'overseas_physical',
+        name: '海外實體商店 / 國外飯店 / 東京迪士尼 / 大阪環球影城 (USJ)',
+        aliases: ['海外消費', '日本', '韓國', '歐美', '出國', '東京迪士尼', '迪士尼', '大阪環球影城', '環球影城', 'usj', '海外實體'],
+        category: '海外實體消費',
+        plans: [{ planId: 'travel', note: '適用海外實體商店刷卡與 Apple Pay 感應付款（含日本/韓國/歐美實體店、東京迪士尼、USJ）。⚠️ 不含海外網購（如 Amazon 網購）。' }],
+      },
+
+      // --- 集精選 & 全支付 & 台塑家 ---
+      {
+        id: 'pxmart',
+        name: '全聯福利中心',
+        aliases: ['全聯', 'pxmart', 'px pay', '全聯實體', '全電商', '小時達', '分批取', '大全聯'],
+        category: '量販超市',
+        plans: [
+          { planId: 'select', note: '【實體門市用 PX Pay / 實體卡】享 2%。⚠️ 集精選不含大全聯、不適用全支付掃碼，也不含全聯線上！' },
+          { planId: 'pxpayplus', note: '【綁定全支付結帳】享 2%！涵蓋全聯實體門市、大全聯、全聯線上（全電商/小時達/分批取），不含繳費與儲值。' },
+        ],
+      },
+      {
+        id: 'carrefour',
+        name: '家樂福 (Carrefour)',
+        aliases: ['家樂福', 'carrefour', '家樂福超市', '家樂福線上'],
+        category: '量販超市',
+        plans: [{ planId: 'select', note: '適用家樂福量販店與超市（不含美食街/商店街非家樂福請款櫃位，且建議勿透過第三方支付）。' }],
+      },
+      {
+        id: 'lopia',
+        name: 'LOPIA 台灣',
+        aliases: ['lopia', '樂比亞'],
+        category: '量販超市',
+        plans: [{ planId: 'select', note: '適用 LOPIA 台灣實體門市刷卡消費。' }],
+      },
+      {
+        id: 'seven_eleven',
+        name: '7-ELEVEN (7-11) 實體門市',
+        aliases: ['7-11', '711', '7-eleven', '小七', '統一超商', '超商'],
+        category: '便利商店',
+        plans: [
+          { planId: 'select', note: '限實體門市一般消費（不含代收繳費、菸品、悠遊卡儲值等）。可與家樂福/全聯/中油併用。' },
+          { planId: 'formosa', note: '台塑家方案同享 7-11 實體門市 2%！若當天同時有台塑加油或台塑生醫消費可切此方案。' },
+        ],
+      },
+      {
+        id: 'familymart',
+        name: '全家便利商店實體門市',
+        aliases: ['全家', 'familymart', '全家超商'],
+        category: '便利商店',
+        plans: [
+          { planId: 'select', note: '限實體門市一般消費（不含代收繳費、菸品等）。' },
+          { planId: 'formosa', note: '台塑家方案同享全家實體門市 2%！' },
+        ],
+      },
+      {
+        id: 'hilife',
+        name: '萊爾富便利商店實體門市',
+        aliases: ['萊爾富', 'hilife', 'hi-life'],
+        category: '便利商店',
+        plans: [{ planId: 'formosa', note: '注意：萊爾富歸類於「台塑家」方案享 2%，非集精選方案！' }],
+      },
+      {
+        id: 'ikea',
+        name: 'IKEA 宜家家居',
+        aliases: ['ikea', '宜家', '宜家家居'],
+        category: '生活家居',
+        plans: [{ planId: 'select', note: '適用 IKEA 實體店與線上購物（限一次付清）。' }],
+      },
+      {
+        id: 'cpc',
+        name: '台灣中油直營站',
+        aliases: ['中油', '台灣中油', '中油直營', '中油pay', '加油'],
+        category: '加油 / 充電 / 停車',
+        plans: [{ planId: 'select', note: '⚠️ 僅限「中油直營站」（不含加盟站）！' }],
+      },
+      {
+        id: 'ev_parking',
+        name: '電動車充電 / 停車 (U-POWER / EVOASIS / EVALUE / TAIL / iCharging / 車麻吉 / uTagGo)',
+        aliases: ['u-power', 'upower', 'evoasis', 'evalue', 'tail', 'icharging', '車麻吉', 'utaggo', '充電', '停車'],
+        category: '加油 / 充電 / 停車',
+        plans: [{ planId: 'select', note: '⚠️ 車麻吉不含加油消費；uTagGo 不含月租費。' }],
+      },
+      {
+        id: 'pxpayplus_general',
+        name: '全支付國內合作通路',
+        aliases: ['全支付', 'pxpay plus', 'pxpayplus'],
+        category: '行動支付',
+        plans: [{ planId: 'pxpayplus', note: '透過全支付綁定 CUBE 卡於國內合作通路消費享 2%。⚠️ 不含繳費、儲值、公益捐款。' }],
+      },
+      {
+        id: 'formosa_group',
+        name: '台塑購物網 / 台塑生醫 / 長庚生技 / 台塑加油站',
+        aliases: ['台塑', '台塑購物網', '台塑生醫', '長庚生技', '台塑石油', '台亞', '台亞加油站', '福懋', '福懋加油站', '速邁樂', '統一速邁樂'],
+        category: '台塑指定通路',
+        plans: [{ planId: 'formosa', note: '涵蓋台塑購物網、台塑生醫/長庚生技實體門市、台塑石油/台亞/福懋/統一速邁樂(本島)加油站。' }],
+      },
+
+      // --- 慶生月 (Birthday Month) ---
+      {
+        id: 'funnow',
+        name: 'FunNow',
+        aliases: ['funnow'],
+        category: '慶生娛樂',
+        plans: [{ planId: 'birthday', customRate: 3.5, note: '🎂 當月壽星專屬 3.5%！非壽星月份屬一般消費 0.3%。' }],
+      },
+      {
+        id: 'birthday_restaurants',
+        name: '慶生指定餐廳 (屋馬 / 茶六 / 鼎王 / 無老鍋 / 詹記等)',
+        aliases: ['屋馬', '茶六', '鼎王', '無老鍋', '詹記', '燒肉', '麻辣鍋', '慶生餐廳'],
+        category: '指定慶生餐廳',
+        plans: [
+          { planId: 'birthday', customRate: 10.0, note: '🎂 當月壽星專屬超高 10% 回饋！' },
+          { planId: 'shopping', note: '非壽星月份仍屬國內餐飲，可切換「樂饗購」享 2%~3.3%。' },
+        ],
+      },
+      {
+        id: 'ktv',
+        name: '指定 KTV (錢櫃 / 好樂迪 / 星聚點 / 享溫馨)',
+        aliases: ['錢櫃', '好樂迪', '星聚點', '享溫馨', 'ktv', '唱歌'],
+        category: 'KTV 娛樂',
+        plans: [{ planId: 'birthday', customRate: 10.0, note: '🎂 當月壽星專屬 10% 回饋！非壽星月份為一般消費 0.3%。' }],
+      },
+      {
+        id: 'gaming_birthday',
+        name: '指定遊戲娛樂 (PlayStation / Nintendo / 巴哈姆特動畫瘋)',
+        aliases: ['playstation', 'psn', 'ps5', 'nintendo', '任天堂', 'switch', 'eshop', '巴哈姆特', '動畫瘋'],
+        category: '遊戲娛樂',
+        plans: [{ planId: 'birthday', customRate: 10.0, note: '🎂 當月壽星專屬 10% 回饋！非壽星月份為一般消費 0.3%。' }],
+      },
+
+      // --- 童樂匯 (Kids Club) ---
+      {
+        id: 'baby_stores',
+        name: '指定母嬰用品 (媽咪愛 / 卡多摩 / 麗兒采家 / 安琪兒)',
+        aliases: ['媽咪愛', '卡多摩', '麗兒采家', '安琪兒', '母嬰', '婦嬰'],
+        category: '母嬰用品',
+        plans: [{ planId: 'kids', customRate: 5.0, note: '🧸 需已解鎖童樂匯親子方案享 5% 回饋！' }],
+      },
+      {
+        id: 'theme_parks',
+        name: '指定親子遊樂園 (Xpark / 六福村 / 義大 / 麗寶等)',
+        aliases: ['xpark', '六福村', '義大', '義大世界', '麗寶', '麗寶樂園', '遊樂園', '親子樂園'],
+        category: '親子遊樂園',
+        plans: [{ planId: 'kids', customRate: 5.0, note: '🧸 需已解鎖童樂匯親子方案享 5% 回饋！若透過 Klook 購票亦可比較「趣旅行」。' }],
+      },
+      {
+        id: 'kids_restaurants',
+        name: '指定親子餐廳 (壽司郎 / 大戶屋 / 雞湯大叔等)',
+        aliases: ['壽司郎', '大戶屋', '雞湯大叔', '親子餐廳'],
+        category: '親子餐廳',
+        plans: [
+          { planId: 'kids', customRate: 5.0, note: '🧸 需已解鎖童樂匯親子方案享 5% 回饋！' },
+          { planId: 'shopping', note: '若未解鎖童樂匯，仍屬國內餐飲，可切換「樂饗購」享 2%~3.3%。' },
+        ],
+      },
+    ];
+
+    // =========================================================================
+    // 4. KNOWN UNLISTED / COMMON TRAP MERCHANTS (0.3% General Spending)
+    // =========================================================================
+    const KNOWN_UNLISTED = [
+      {
+        name: 'Yahoo 購物中心 / 超級商城',
+        aliases: ['yahoo', 'yahoo購物', 'yahoo購物中心', '奇摩購物'],
+        reason: 'Yahoo 購物中心目前「不在」2026 年玩數位指定國內網購清單中，直接刷卡僅享一般消費 0.3%。',
+      },
+      {
+        name: '東森購物',
+        aliases: ['東森', '東森購物', 'etmall'],
+        reason: '東森購物目前「不在」玩數位指定電商名單內，直接刷卡為一般消費 0.3%。',
+      },
+      {
+        name: '博客來',
+        aliases: ['博客來', 'books.com.tw'],
+        reason: '博客來目前「不在」玩數位指定網購通路內，直接刷卡僅享一般消費 0.3%。',
+      },
+      {
+        name: 'Amazon 亞馬遜網購',
+        aliases: ['amazon', '亞馬遜', '日亞', '美亞'],
+        reason: 'Amazon 網購目前「不在」玩數位國際電商名單內，且非「海外實體消費」（不適用趣旅行），僅享 0.3% 且須付 1.5% 海外交易手續費。',
+      },
+      {
+        name: 'Apple Store 官網 / 直營店買硬體',
+        aliases: ['apple store', 'apple官網', 'iphone', 'macbook', 'ipad', '買手機', '蘋果官網'],
+        reason: '⚠️ 常見地雷！玩數位的「Apple 媒體服務」僅包含 App Store、iCloud、Apple Music 等數位訂閱；在 Apple Store 官網或直營店購買硬體設備僅享一般消費 0.3%！（建議可改至 momo / PChome 24h / 蝦皮官方旗艦店一次付清享玩數位回饋）',
+      },
+      {
+        name: 'LINE Pay 一般消費',
+        aliases: ['line pay', 'linepay', '賴配'],
+        reason: '⚠️ 常見地雷！CUBE 卡綁定 LINE Pay 消費大多無法辨識原通路（視同第三方支付一般消費 0.3%），建議優先改用實體卡、Apple Pay / Google Pay，或確認店家是否支援「全支付」切換全支付方案拿 2%！',
+      },
+      {
+        name: '好市多 (Costco)',
+        aliases: ['costco', '好市多'],
+        reason: '台灣好市多賣場僅限使用富邦 Costco 聯名卡，不接受國泰世華 CUBE 卡刷卡。',
+      },
+    ];
+
+    const QUICK_PICKS = [
+      '蝦皮購物', 'momo 購物網', 'PChome 24h 購物', 'Coupang 酷澎', '淘寶',
+      '屈臣氏', '康是美', '全聯', '家樂福', 'Uber Eats', 'IKEA', 'ChatGPT', 'Klook', '新光三越'
+    ];
+
+    // =========================================================================
+    // 5. HELPER FUNCTIONS
+    // =========================================================================
+    function getPlanRate(planId, customRate = null) {
+      const plan = PLANS[planId];
+      if (!plan) return 0.3;
+      if (customRate !== null && customRate !== undefined) return customRate;
+      if (plan.type === 'dynamic') return LEVEL_RATES[state.level];
+      if (plan.type === 'fixed' || plan.type === 'conditional') return plan.fixedRate || 0.3;
+      return 0.3;
+    }
+
+    function isPlanUnlocked(planId) {
+      const plan = PLANS[planId];
+      if (!plan) return false;
+      if (plan.type === 'conditional') {
+        return Boolean(state[plan.conditionKey]);
+      }
+      return true;
+    }
+
+    function calcPoints(amount, rate) {
+      const num = parseFloat(amount);
+      if (isNaN(num) || num <= 0) return 0;
+      return Math.round(num * (rate / 100));
+    }
+
+    function formatNumber(n) {
+      return Number(n).toLocaleString('zh-TW');
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const bgClass = type === 'success' ? 'bg-slate-900 text-white' : 'bg-amber-600 text-white';
+      toast.className = `${bgClass} px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 pointer-events-auto transition-all duration-300 translate-y-2 opacity-0`;
+      toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle-2' : 'info'}" class="w-4 h-4 text-cathay-400"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 2400);
+    }
+
+    // Fuzzy search across MERCHANTS and KNOWN_UNLISTED
+    function searchDatabase(rawQuery) {
+      const q = (rawQuery || '').trim().toLowerCase();
+      if (!q) return { matchedMerchants: [], matchedUnlisted: null };
+
+      const scored = [];
+      for (const m of MERCHANTS) {
+        let score = 0;
+        const nameLow = m.name.toLowerCase();
+        if (nameLow === q) score = 100;
+        else if (m.aliases.some(a => a.toLowerCase() === q)) score = 95;
+        else if (nameLow.includes(q)) score = 80;
+        else if (m.aliases.some(a => a.toLowerCase().includes(q) || q.includes(a.toLowerCase()))) score = 70;
+        else if (m.category.toLowerCase().includes(q)) score = 40;
+
+        if (score > 0) scored.push({ merchant: m, score });
+      }
+      scored.sort((a, b) => b.score - a.score);
+
+      // Check known unlisted traps
+      let matchedUnlisted = null;
+      for (const u of KNOWN_UNLISTED) {
+        const nameLow = u.name.toLowerCase();
+        if (nameLow.includes(q) || q.includes(nameLow) || u.aliases.some(a => a.toLowerCase().includes(q) || q.includes(a.toLowerCase()))) {
+          matchedUnlisted = u;
+          break;
+        }
+      }
+
+      return {
+        matchedMerchants: scored.map(s => s.merchant),
+        matchedUnlisted,
+      };
+    }
+
+    // Evaluate a merchant's eligible plans sorted by rate desc
+    function evaluateMerchant(merchant) {
+      const unlockedOptions = [];
+      const lockedOptions = [];
+
+      for (const p of merchant.plans) {
+        const planMeta = PLANS[p.planId];
+        const rate = getPlanRate(p.planId, p.customRate);
+        const item = {
+          planId: p.planId,
+          plan: planMeta,
+          rate,
+          note: p.note || '',
+          unlocked: isPlanUnlocked(p.planId),
+        };
+        if (item.unlocked) unlockedOptions.push(item);
+        else lockedOptions.push(item);
+      }
+
+      unlockedOptions.sort((a, b) => b.rate - a.rate);
+      lockedOptions.sort((a, b) => b.rate - a.rate);
+      return { unlockedOptions, lockedOptions };
+    }
+
+    // =========================================================================
+    // 6. UI ACTIONS: TABS & PERSONALIZATION
+    // =========================================================================
+    function switchTab(tab) {
+      state.activeTab = tab;
+      ['search', 'calculator', 'overview'].forEach(t => {
+        document.getElementById(`section-${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tab) {
+          btn.classList.add('bg-white', 'text-cathay-600', 'shadow-sm');
+          btn.classList.remove('text-slate-600');
+        } else {
+          btn.classList.remove('bg-white', 'text-cathay-600', 'shadow-sm');
+          btn.classList.add('text-slate-600');
+        }
+      });
+
+      if (tab === 'overview') renderOverview();
+      if (tab === 'calculator') renderCalculator();
+      lucide.createIcons();
+    }
+
+    function setLevel(lvl) {
+      state.level = lvl;
+      [1, 2, 3].forEach(i => {
+        const btn = document.getElementById(`lvl-btn-${i}`);
+        if (i === lvl) {
+          btn.classList.add('bg-cathay-500', 'text-white', 'shadow-sm');
+          btn.classList.remove('text-slate-600');
+        } else {
+          btn.classList.remove('bg-cathay-500', 'text-white', 'shadow-sm');
+          btn.classList.add('text-slate-600');
+        }
+      });
+      document.getElementById('level-desc').textContent = LEVEL_DESCS[lvl];
+      refreshAllViews();
+    }
+
+    function toggleSpecial(type, checked) {
+      if (type === 'birthday') state.isBirthday = checked;
+      if (type === 'kids') state.isKids = checked;
+      refreshAllViews();
+    }
+
+    function refreshAllViews() {
+      if (state.currentQuery) renderSearchResult(state.currentQuery);
+      if (state.transactions.length > 0) renderCalculator();
+      if (state.activeTab === 'overview') renderOverview();
+    }
+
+    // =========================================================================
+    // 7. SMART SEARCH RENDERING & INTERACTIONS
+    // =========================================================================
+    function initQuickPicks() {
+      const container = document.getElementById('quick-picks');
+      container.innerHTML = QUICK_PICKS.map(label => `
+        <button
+          onclick="selectQuickPick('${label}')"
+          class="px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 hover:bg-cathay-50 text-slate-700 hover:text-cathay-700 border border-slate-200/80 hover:border-cathay-200 transition-all active:scale-95"
+        >
+          ${label}
+        </button>
+      `).join('');
+    }
+
+    function selectQuickPick(label) {
+      const input = document.getElementById('search-input');
+      input.value = label;
+      document.getElementById('clear-search-btn').classList.remove('hidden');
+      hideDropdown('search-dropdown');
+      executeSearch();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('search-input');
+      input.value = '';
+      state.currentQuery = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      document.getElementById('search-result-area').classList.add('hidden');
+      document.getElementById('search-empty-state').classList.remove('hidden');
+      hideDropdown('search-dropdown');
+      input.focus();
+    }
+
+    function hideDropdown(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function handleSearchInput(val) {
+      const clearBtn = document.getElementById('clear-search-btn');
+      clearBtn.classList.toggle('hidden', !val.trim());
+
+      const dropdown = document.getElementById('search-dropdown');
+      if (!val.trim()) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      const { matchedMerchants, matchedUnlisted } = searchDatabase(val);
+      let html = '';
+
+      if (matchedMerchants.length > 0) {
+        html += matchedMerchants.slice(0, 7).map(m => {
+          const { unlockedOptions, lockedOptions } = evaluateMerchant(m);
+          const top = unlockedOptions[0] || lockedOptions[0];
+          const badgeHtml = top
+            ? `<span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${top.plan.badgeBg} ${top.plan.badgeText} border ${top.plan.badgeBorder}">${top.plan.name} ${top.rate}%</span>`
+            : '';
+          return `
+            <button
+              type="button"
+              onclick="selectMerchantFromDropdown('${m.name.replace(/'/g, "\\'")}')"
+              class="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center justify-between gap-3 border-b border-slate-100 last:border-b-0 transition-colors"
+            >
+              <div class="min-w-0">
+                <div class="text-sm font-bold text-slate-800 truncate">${m.name}</div>
+                <div class="text-[11px] text-slate-400">${m.category}</div>
+              </div>
+              <div class="shrink-0">${badgeHtml}</div>
+            </button>
+          `;
+        }).join('');
+      }
+
+      if (matchedUnlisted) {
+        html += `
+          <button
+            type="button"
+            onclick="selectMerchantFromDropdown('${matchedUnlisted.name.replace(/'/g, "\\'")}')"
+            class="w-full px-4 py-3 text-left hover:bg-amber-50/60 flex items-center justify-between gap-3 border-t border-slate-100 transition-colors"
+          >
+            <div class="min-w-0">
+              <div class="text-sm font-bold text-slate-800 truncate">${matchedUnlisted.name}</div>
+              <div class="text-[11px] text-amber-600">非主要指定通路（一般消費提醒）</div>
+            </div>
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 shrink-0">一般 0.3%</span>
+          </button>
+        `;
+      }
+
+      if (!html) {
+        html = `
+          <button
+            type="button"
+            onclick="executeSearch()"
+            class="w-full px-4 py-3.5 text-left hover:bg-slate-50 flex items-center justify-between text-sm text-slate-600"
+          >
+            <span>查詢「<strong class="text-slate-900">${escapeHtml(val)}</strong>」的適用方案</span>
+            <span class="text-xs text-cathay-600 font-semibold">按 Enter 判斷 →</span>
+          </button>
+        `;
+      }
+
+      dropdown.innerHTML = html;
+      dropdown.classList.remove('hidden');
+    }
+
+    function selectMerchantFromDropdown(name) {
+      document.getElementById('search-input').value = name;
+      hideDropdown('search-dropdown');
+      executeSearch();
+    }
+
+    function executeSearch() {
+      const val = document.getElementById('search-input').value.trim();
+      if (!val) {
+        showToast('請先輸入購物平台或通路名稱', 'info');
+        return;
+      }
+      state.currentQuery = val;
+      hideDropdown('search-dropdown');
+      renderSearchResult(val);
+    }
+
+    function updateSearchAmount(val) {
+      const num = parseFloat(val);
+      state.currentAmount = isNaN(num) || num < 0 ? 0 : num;
+      // Update displayed points smoothly without losing input focus
+      document.querySelectorAll('[data-rate-points]').forEach(el => {
+        const rate = parseFloat(el.getAttribute('data-rate-points'));
+        el.textContent = formatNumber(calcPoints(state.currentAmount, rate));
+      });
+    }
+
+    function addCurrentToCalculator(merchantName) {
+      const amount = state.currentAmount > 0 ? state.currentAmount : 1000;
+      const { matchedMerchants } = searchDatabase(merchantName);
+      state.transactions.push({
+        id: Date.now(),
+        query: merchantName,
+        merchantId: matchedMerchants[0] ? matchedMerchants[0].id : null,
+        amount,
+      });
+      updateCalcBadge();
+      showToast(`已加入「${merchantName} NT$${formatNumber(amount)}」至今日多筆試算`);
+    }
+
+    function renderSearchResult(query) {
+      const area = document.getElementById('search-result-area');
+      const emptyState = document.getElementById('search-empty-state');
+      emptyState.classList.add('hidden');
+      area.classList.remove('hidden');
+
+      const { matchedMerchants, matchedUnlisted } = searchDatabase(query);
+
+      // Case A: Exact or strong trap match (e.g. "Apple Store 官網" shouldn't accidentally match "Apple 媒體服務")
+      const isAppleHardwareTrap = /apple\s*store|apple\s*官網|蘋果官網|iphone|macbook|ipad|買手機/i.test(query);
+
+      if (matchedMerchants.length > 0 && !isAppleHardwareTrap && (!matchedUnlisted || matchedMerchants[0].name.toLowerCase() === query.toLowerCase())) {
+        const primary = matchedMerchants[0];
+        const { unlockedOptions, lockedOptions } = evaluateMerchant(primary);
+
+        // If merchant ONLY exists in a locked special plan (e.g., 錢櫃 when Birthday is OFF, or 媽咪愛 when Kids is OFF)
+        if (unlockedOptions.length === 0 && lockedOptions.length > 0) {
+          area.innerHTML = buildLockedOnlyResultHtml(primary, lockedOptions);
+          lucide.createIcons();
+          return;
+        }
+
+        const best = unlockedOptions[0];
+        const alternatives = unlockedOptions.slice(1);
+        const bestPoints = calcPoints(state.currentAmount, best.rate);
+
+        // Check if there is an even higher locked option (e.g. Birthday 3.5% or 10%, Kids 5%)
+        const higherLocked = lockedOptions.filter(l => l.rate > best.rate);
+
+        area.innerHTML = `
+          <!-- Primary Recommendation Card -->
+          <div class="bg-white rounded-2xl shadow-card border-2 border-cathay-500/30 overflow-hidden">
+            <div class="bg-gradient-to-r from-cathay-500 to-emerald-600 px-5 sm:px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/20 backdrop-blur-sm">最佳推薦方案</span>
+                <span class="text-sm font-medium text-emerald-50 truncate">${escapeHtml(primary.name)} · ${primary.category}</span>
+              </div>
+              <button
+                onclick="addCurrentToCalculator('${primary.name.replace(/'/g, "\\'")}')"
+                class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-colors"
+              >
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                加入今日多筆試算
+              </button>
+            </div>
+
+            <div class="p-5 sm:p-6">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-5 border-b border-slate-100">
+                <!-- Plan Name & Rate -->
+                <div class="flex items-center gap-4">
+                  <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${best.plan.badgeBg} border ${best.plan.badgeBorder} flex items-center justify-center text-3xl shrink-0">
+                    ${best.plan.emoji}
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-slate-400 mb-0.5">建議立即於 CUBE App 切換至</div>
+                    <div class="flex items-baseline gap-2.5 flex-wrap">
+                      <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900">${best.plan.name}</h3>
+                      <span class="inline-flex items-baseline gap-0.5 text-2xl sm:text-3xl font-extrabold text-cathay-600">
+                        ${best.rate}<span class="text-base font-bold">%</span>
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">回饋無上限（以小樹點 1 點 = 1 元計算）</p>
+                  </div>
+                </div>
+
+                <!-- Built-in Amount Calculator -->
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 md:min-w-[260px]">
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <label for="result-amount-input" class="text-xs font-bold text-slate-600">消費金額試算 (NT$)</label>
+                    <span class="text-[11px] text-slate-400">四捨五入</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <input
+                      id="result-amount-input"
+                      type="number"
+                      min="0"
+                      step="100"
+                      value="${state.currentAmount}"
+                      oninput="updateSearchAmount(this.value)"
+                      class="w-28 px-3 py-1.5 text-sm font-bold bg-white border border-slate-300 rounded-xl focus:border-cathay-500 focus:outline-none text-slate-900"
+                    />
+                    <div class="flex-1 text-right">
+                      <div class="text-[11px] text-slate-500">預估獲得小樹點</div>
+                      <div class="text-xl font-extrabold text-cathay-600">
+                        <span data-rate-points="${best.rate}">${formatNumber(bestPoints)}</span>
+                        <span class="text-xs font-bold text-slate-600">點</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Unlockable Higher Rate Teaser (if applicable) -->
+              ${higherLocked.length > 0 ? `
+                <div class="mt-4 p-3.5 rounded-xl bg-fuchsia-50/80 border border-fuchsia-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div class="flex items-start gap-2.5 text-xs text-fuchsia-900">
+                    <span class="text-base leading-none mt-0.5">${higherLocked[0].plan.emoji}</span>
+                    <div>
+                      <span class="font-bold">更高回饋提示：</span>若符合「${higherLocked[0].plan.name}」資格，此通路最高可享 <strong class="text-fuchsia-700">${higherLocked[0].rate}%</strong> 回饋！
+                      <span class="block text-fuchsia-700/80 mt-0.5">${higherLocked[0].note}</span>
+                    </div>
+                  </div>
+                  <button
+                    onclick="enableSpecialAndRefresh('${higherLocked[0].planId}')"
+                    class="shrink-0 px-3 py-1.5 rounded-lg bg-fuchsia-600 hover:bg-fuchsia-700 text-white text-xs font-bold transition-colors"
+                  >
+                    開啟${higherLocked[0].plan.name}試算
+                  </button>
+                </div>
+              ` : ''}
+
+              <!-- Pitfalls & Notes Section -->
+              <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200/70">
+                  <div class="flex items-center gap-1.5 text-xs font-extrabold text-amber-800 mb-1.5">
+                    <i data-lucide="alert-circle" class="w-4 h-4 text-amber-600"></i>
+                    通路專屬注意事項
+                  </div>
+                  <p class="text-xs text-amber-900/90 leading-relaxed">${best.note || '請確認特店請款名稱符合指定通路，並以一次付清結帳。'}</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+                  <div class="flex items-center gap-1.5 text-xs font-extrabold text-slate-700 mb-1.5">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-slate-500"></i>
+                    CUBE 卡通用避雷提醒
+                  </div>
+                  <ul class="text-xs text-slate-600 space-y-1 list-disc list-inside">
+                    <li>特約商店<strong>分期付款僅享 0.3%</strong>，高回饋限一次付清。</li>
+                    <li>消費當日 <strong>23:59 前</strong>需於 CUBE App 完成切換（每日限一次）。</li>
+                    <li>除「全支付」方案外，綁定 LINE Pay/街口等第三方支付通常不計高回饋。</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alternative Matching Plans (if merchant qualifies for multiple plans) -->
+          ${alternatives.length > 0 ? `
+            <div class="bg-white rounded-2xl p-5 shadow-soft border border-slate-200/70">
+              <h4 class="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                <i data-lucide="git-compare" class="w-4 h-4 text-cathay-500"></i>
+                此通路同時符合其他方案（替代比較）
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                ${alternatives.map(alt => `
+                  <div class="p-4 rounded-xl border border-slate-200/80 bg-slate-50/60 flex flex-col justify-between gap-2">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-2">
+                        <span class="text-lg">${alt.plan.emoji}</span>
+                        <span class="font-bold text-slate-900">${alt.plan.name}</span>
+                        <span class="px-2 py-0.5 rounded-md text-xs font-extrabold ${alt.plan.badgeBg} ${alt.plan.badgeText}">${alt.rate}%</span>
+                      </div>
+                      <div class="text-xs font-bold text-slate-600">
+                        約 <span data-rate-points="${alt.rate}" class="text-slate-900">${formatNumber(calcPoints(state.currentAmount, alt.rate))}</span> 點
+                      </div>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed">${alt.note}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Related Matched Merchants (if fuzzy search returned multiple hits) -->
+          ${matchedMerchants.length > 1 ? `
+            <div class="bg-white rounded-2xl p-4 shadow-soft border border-slate-200/70">
+              <div class="text-xs font-bold text-slate-500 mb-2">你是不是也想找：</div>
+              <div class="flex flex-wrap gap-2">
+                ${matchedMerchants.slice(1, 6).map(m => `
+                  <button
+                    onclick="selectQuickPick('${m.name.replace(/'/g, "\\'")}')"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-cathay-50 hover:text-cathay-700 text-slate-700 transition-colors"
+                  >
+                    ${m.name}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        `;
+      } else {
+        // Case B: Unlisted / General Spending (0.3%)
+        area.innerHTML = buildUnlistedResultHtml(query, matchedUnlisted);
+      }
+
+      lucide.createIcons();
+    }
+
+    function enableSpecialAndRefresh(planId) {
+      if (planId === 'birthday') {
+        state.isBirthday = true;
+        document.getElementById('toggle-birthday').checked = true;
+      } else if (planId === 'kids') {
+        state.isKids = true;
+        document.getElementById('toggle-kids').checked = true;
+      }
+      refreshAllViews();
+      showToast(`已為你開啟「${PLANS[planId].name}」方案！`);
+    }
+
+    function buildLockedOnlyResultHtml(merchant, lockedOptions) {
+      const topLocked = lockedOptions[0];
+      const basePoints = calcPoints(state.currentAmount, 0.3);
+      return `
+        <div class="bg-white rounded-2xl shadow-soft border border-slate-200 overflow-hidden">
+          <div class="bg-slate-800 px-5 sm:px-6 py-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-400 text-slate-900">需特定資格解鎖</span>
+              <span class="text-sm font-semibold">${escapeHtml(merchant.name)}</span>
+            </div>
+            <button
+              onclick="addCurrentToCalculator('${merchant.name.replace(/'/g, "\\'")}')"
+              class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-colors"
+            >
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+              加入今日多筆試算
+            </button>
+          </div>
+          <div class="p-5 sm:p-6 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <div class="text-xs font-semibold text-slate-400">目前設定下回饋率</div>
+                <div class="text-2xl font-extrabold text-slate-800 mt-0.5">一般消費 <span class="text-slate-500">0.3%</span></div>
+                <p class="text-xs text-slate-500 mt-1">此通路僅屬於限定方案「<strong>${topLocked.plan.name}</strong>」（目前未開啟）。</p>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200 md:min-w-[240px] flex items-center justify-between gap-3">
+                <input
+                  type="number" min="0" step="100" value="${state.currentAmount}"
+                  oninput="updateSearchAmount(this.value)"
+                  class="w-24 px-2.5 py-1.5 text-sm font-bold bg-white border border-slate-300 rounded-lg"
+                />
+                <div class="text-right">
+                  <div class="text-[11px] text-slate-400">一般消費預估</div>
+                  <div class="text-lg font-extrabold text-slate-700"><span data-rate-points="0.3">${formatNumber(basePoints)}</span> 點</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl ${topLocked.plan.badgeBg} border ${topLocked.plan.badgeBorder} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="text-xs text-slate-800 space-y-1">
+                <div class="font-extrabold text-sm flex items-center gap-1.5">
+                  <span>${topLocked.plan.emoji}</span>
+                  符合「${topLocked.plan.name}」資格可享 ${topLocked.rate}% 回饋！
+                </div>
+                <p>${topLocked.note}</p>
+              </div>
+              <button
+                onclick="enableSpecialAndRefresh('${topLocked.planId}')"
+                class="shrink-0 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors"
+              >
+                立即開啟${topLocked.plan.name}
+              </button>
+            </div>
+
+            ${buildGeneralAdviceCardsHtml()}
+          </div>
+        </div>
+      `;
+    }
+
+    function buildUnlistedResultHtml(query, trapObj) {
+      const displayTitle = trapObj ? trapObj.name : query;
+      const basePoints = calcPoints(state.currentAmount, 0.3);
+      const fixedPoints = calcPoints(state.currentAmount, 1.2);
+      return `
+        <div class="bg-white rounded-2xl shadow-soft border border-amber-200 overflow-hidden">
+          <div class="bg-amber-50 border-b border-amber-200/80 px-5 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-amber-700">不在主要高回饋指定通路清單中</div>
+                <h3 class="text-base sm:text-lg font-extrabold text-slate-900">「${escapeHtml(displayTitle)}」預估為一般消費 0.3%</h3>
+              </div>
+            </div>
+            <button
+              onclick="addCurrentToCalculator('${displayTitle.replace(/'/g, "\\'")}')"
+              class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100/60 text-amber-800 border border-amber-200 text-xs font-bold transition-colors"
+            >
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+              仍加入今日試算
+            </button>
+          </div>
+
+          <div class="p-5 sm:p-6 space-y-5">
+            ${trapObj ? `
+              <div class="p-4 rounded-xl bg-rose-50/70 border border-rose-200 text-xs sm:text-sm text-rose-900 leading-relaxed">
+                <strong class="text-rose-700">通路說明：</strong>${trapObj.reason}
+              </div>
+            ` : `
+              <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                「<strong>${escapeHtml(query)}</strong>」未收錄於 2026 年 CUBE 卡主要指定加碼通路中，直接刷卡預設以一般消費 <strong>0.3%</strong> 小樹點計算（若屬國內實體餐廳或小額餐飲，仍有機會被歸類在「樂饗購」）。
+              </p>
+            `}
+
+            <!-- Amount comparison: 0.3% vs 1.2% -->
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <label class="text-xs font-bold text-slate-600 shrink-0">試算金額 (NT$)</label>
+                <input
+                  type="number" min="0" step="100" value="${state.currentAmount}"
+                  oninput="updateSearchAmount(this.value)"
+                  class="w-28 px-3 py-1.5 text-sm font-bold bg-white border border-slate-300 rounded-xl focus:border-cathay-500 focus:outline-none"
+                />
+              </div>
+              <div class="flex items-center gap-5">
+                <div>
+                  <div class="text-[11px] text-slate-500">一般消費 (0.3%)</div>
+                  <div class="text-lg font-extrabold text-slate-700"><span data-rate-points="0.3">${formatNumber(basePoints)}</span> <span class="text-xs">點</span></div>
+                </div>
+                <div class="h-8 w-px bg-slate-200"></div>
+                <div>
+                  <div class="text-[11px] text-cathay-700 font-semibold">若改切固定回饋 (1.2%)</div>
+                  <div class="text-lg font-extrabold text-cathay-600"><span data-rate-points="1.2">${formatNumber(fixedPoints)}</span> <span class="text-xs">點</span></div>
+                </div>
+              </div>
+            </div>
+
+            ${buildGeneralAdviceCardsHtml()}
+          </div>
+        </div>
+      `;
+    }
+
+    function buildGeneralAdviceCardsHtml() {
+      return `
+        <div>
+          <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-cathay-500"></i>
+            實用解套建議
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="p-3.5 rounded-xl bg-cathay-50/60 border border-cathay-200/70">
+              <div class="text-xs font-extrabold text-cathay-800 mb-1">1. 評估「固定回饋」1.2%</div>
+              <p class="text-[11px] text-slate-600 leading-relaxed">若常刷非指定通路或懶得天天切方案，可評估是否改用固定回饋方案享 1.2% 無腦刷。</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-purple-50/60 border border-purple-200/70">
+              <div class="text-xs font-extrabold text-purple-800 mb-1">2. 改用「全支付」拿 2%</div>
+              <p class="text-[11px] text-slate-600 leading-relaxed">結帳前確認該店家是否支援「全支付」掃碼或線上付款，切換全支付方案即可拿 2%！</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200/70">
+              <div class="text-xs font-extrabold text-blue-800 mb-1">3. 查 CUBE App 領券加碼</div>
+              <p class="text-[11px] text-slate-600 leading-relaxed">國泰不定期推出「快閃領券」加碼活動（如特定電商、百貨或行動支付），刷卡前記得去領券。</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 8. MULTI-TRANSACTION CALCULATOR LOGIC
+    // =========================================================================
+    function updateCalcBadge() {
+      const badge = document.getElementById('calc-badge');
+      badge.textContent = state.transactions.length;
+      badge.classList.toggle('hidden', state.transactions.length === 0);
+    }
+
+    function handleCalcMerchantInput(val) {
+      const dropdown = document.getElementById('calc-dropdown');
+      if (!val.trim()) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+      const { matchedMerchants } = searchDatabase(val);
+      if (matchedMerchants.length === 0) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+      dropdown.innerHTML = matchedMerchants.slice(0, 6).map(m => `
+        <button
+          type="button"
+          onclick="selectCalcDropdown('${m.name.replace(/'/g, "\\'")}')"
+          class="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 flex items-center justify-between text-xs border-b border-slate-100 last:border-b-0"
+        >
+          <span class="font-bold text-slate-800">${m.name}</span>
+          <span class="text-slate-400">${m.category}</span>
+        </button>
+      `).join('');
+      dropdown.classList.remove('hidden');
+    }
+
+    function selectCalcDropdown(name) {
+      document.getElementById('calc-merchant-input').value = name;
+      hideDropdown('calc-dropdown');
+      document.getElementById('calc-amount-input').focus();
+    }
+
+    function addTransaction() {
+      const mInput = document.getElementById('calc-merchant-input');
+      const aInput = document.getElementById('calc-amount-input');
+      const query = mInput.value.trim();
+      const amount = parseFloat(aInput.value);
+
+      if (!query) {
+        showToast('請輸入消費通路名稱', 'info');
+        mInput.focus();
+        return;
+      }
+      if (isNaN(amount) || amount <= 0) {
+        showToast('請輸入大於 0 的消費金額', 'info');
+        aInput.focus();
+        return;
+      }
+
+      const { matchedMerchants } = searchDatabase(query);
+      const isAppleTrap = /apple\s*store|apple\s*官網|蘋果官網|iphone|macbook/i.test(query);
+
+      state.transactions.push({
+        id: Date.now() + Math.random(),
+        query: !isAppleTrap && matchedMerchants[0] ? matchedMerchants[0].name : query,
+        merchantId: !isAppleTrap && matchedMerchants[0] ? matchedMerchants[0].id : null,
+        amount,
+      });
+
+      mInput.value = '';
+      hideDropdown('calc-dropdown');
+      updateCalcBadge();
+      renderCalculator();
+      showToast('已新增一筆今日消費');
+    }
+
+    function removeTransaction(id) {
+      state.transactions = state.transactions.filter(t => t.id !== id);
+      updateCalcBadge();
+      renderCalculator();
+    }
+
+    function updateTransactionAmount(id, newVal) {
+      const tx = state.transactions.find(t => t.id === id);
+      const num = parseFloat(newVal);
+      if (tx && !isNaN(num) && num >= 0) {
+        tx.amount = num;
+        renderCalculatorResultsOnly();
+      }
+    }
+
+    function loadSampleTransactions() {
+      state.transactions = [
+        { id: 1, query: '蝦皮購物', merchantId: 'shopee', amount: 2500 },
+        { id: 2, query: '康是美 (COSMED)', merchantId: 'cosmed', amount: 800 },
+        { id: 3, query: '全聯福利中心', merchantId: 'pxmart', amount: 1200 },
+      ];
+      updateCalcBadge();
+      renderCalculator();
+      showToast('已載入範例：蝦皮 $2,500 + 康是美 $800 + 全聯 $1,200');
+    }
+
+    function clearTransactions() {
+      state.transactions = [];
+      updateCalcBadge();
+      renderCalculator();
+    }
+
+    function renderCalculator() {
+      const listEl = document.getElementById('calc-list-container');
+      const resEl = document.getElementById('calc-results-container');
+
+      if (state.transactions.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-8 px-4 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50">
+            <i data-lucide="shopping-cart" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+            <p class="text-sm font-bold text-slate-600">尚未新增今日消費項目</p>
+            <p class="text-xs text-slate-400 mt-1">在上方輸入通路與金額，或點擊右上角「載入範例」立即體驗</p>
+          </div>
+        `;
+        resEl.classList.add('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      listEl.innerHTML = `
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 px-1 mb-1">
+          <span>今日預計消費清單（共 ${state.transactions.length} 筆）</span>
+          <span>總金額：NT$ ${formatNumber(state.transactions.reduce((s, t) => s + t.amount, 0))}</span>
+        </div>
+        ${state.transactions.map(tx => {
+          const m = MERCHANTS.find(x => x.id === tx.merchantId);
+          const badges = m
+            ? m.plans.filter(p => isPlanUnlocked(p.planId)).map(p => {
+                const pm = PLANS[p.planId];
+                const r = getPlanRate(p.planId, p.customRate);
+                return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${pm.badgeBg} ${pm.badgeText}">${pm.name} ${r}%</span>`;
+              }).join(' ')
+            : `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">一般 0.3%</span>`;
+
+          return `
+            <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div class="min-w-0 flex-1">
+                <div class="text-sm font-bold text-slate-800 truncate">${escapeHtml(tx.query)}</div>
+                <div class="flex flex-wrap gap-1 mt-1">${badges || '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">一般 0.3%</span>'}</div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center bg-white border border-slate-200 rounded-lg px-2 py-1">
+                  <span class="text-xs text-slate-400 mr-1">$</span>
+                  <input
+                    type="number" min="0" step="100" value="${tx.amount}"
+                    oninput="updateTransactionAmount(${tx.id}, this.value)"
+                    class="w-20 text-sm font-bold text-slate-800 focus:outline-none text-right"
+                  />
+                </div>
+                <button onclick="removeTransaction(${tx.id})" class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" aria-label="刪除">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      `;
+
+      renderCalculatorResultsOnly();
+      lucide.createIcons();
+    }
+
+    function renderCalculatorResultsOnly() {
+      const resEl = document.getElementById('calc-results-container');
+      if (state.transactions.length === 0) {
+        resEl.classList.add('hidden');
+        return;
+      }
+
+      const totalAmount = state.transactions.reduce((s, t) => s + t.amount, 0);
+      const activePlanIds = Object.keys(PLANS).filter(pid => isPlanUnlocked(pid));
+
+      // Compute total points for every unlocked plan
+      const planScores = activePlanIds.map(pid => {
+        let totalPoints = 0;
+        const details = state.transactions.map(tx => {
+          const m = MERCHANTS.find(x => x.id === tx.merchantId);
+          const matchedPlan = m ? m.plans.find(p => p.planId === pid) : null;
+          const rate = matchedPlan ? getPlanRate(pid, matchedPlan.customRate) : 0.3;
+          const pts = calcPoints(tx.amount, rate);
+          totalPoints += pts;
+          return { query: tx.query, amount: tx.amount, rate, pts, isHit: Boolean(matchedPlan) };
+        });
+
+        return {
+          planId: pid,
+          plan: PLANS[pid],
+          totalPoints,
+          effectiveRate: totalAmount > 0 ? ((totalPoints / totalAmount) * 100).toFixed(2) : '0.00',
+          details,
+        };
+      });
+
+      planScores.sort((a, b) => b.totalPoints - a.totalPoints);
+
+      const winner = planScores[0];
+      const runnerUp = planScores[1];
+      const diffFromSecond = runnerUp ? winner.totalPoints - runnerUp.totalPoints : 0;
+      const baseAllPoints = state.transactions.reduce((s, tx) => s + calcPoints(tx.amount, 0.3), 0);
+      const diffFromBase = winner.totalPoints - baseAllPoints;
+      const maxPts = Math.max(winner.totalPoints, 1);
+
+      resEl.classList.remove('hidden');
+      resEl.innerHTML = `
+        <!-- Winner Highlight Card -->
+        <div class="bg-gradient-to-br from-cathay-500 to-emerald-600 rounded-2xl p-5 sm:p-6 text-white shadow-card">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-bold mb-2">
+                <i data-lucide="trophy" class="w-3.5 h-3.5"></i>
+                今日最划算切換方案
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-3xl">${winner.plan.emoji}</span>
+                <h3 class="text-2xl sm:text-3xl font-extrabold">${winner.plan.name}</h3>
+              </div>
+              <p class="text-xs sm:text-sm text-emerald-50 mt-1.5">
+                ${diffFromSecond > 0 ? `比第二名「${runnerUp.plan.name}」多賺 <strong>${formatNumber(diffFromSecond)} 點</strong>` : `與「${runnerUp.plan.name}」並列第一`}
+                · 比一般消費多賺 <strong>${formatNumber(diffFromBase)} 點</strong>
+              </p>
+            </div>
+            <div class="bg-white/15 backdrop-blur-sm rounded-2xl px-5 py-3.5 text-left sm:text-right shrink-0">
+              <div class="text-xs text-emerald-100">今日預估總回饋</div>
+              <div class="text-3xl font-extrabold">${formatNumber(winner.totalPoints)} <span class="text-sm font-bold">小樹點</span></div>
+              <div class="text-xs text-emerald-100 mt-0.5">綜合回饋率 ${winner.effectiveRate}%</div>
+            </div>
+          </div>
+
+          <!-- Winner Breakdown -->
+          <div class="mt-4 pt-4 border-t border-white/20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            ${winner.details.map(d => `
+              <div class="bg-white/10 rounded-xl px-3 py-2 flex items-center justify-between text-xs">
+                <span class="truncate pr-2 ${d.isHit ? 'font-bold text-white' : 'text-emerald-100/80'}">${escapeHtml(d.query)}</span>
+                <span class="shrink-0 font-bold ${d.isHit ? 'text-amber-200' : 'text-emerald-100/70'}">${d.rate}% (+${d.pts}點)</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- All Plans Comparison Bars -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-soft border border-slate-200/70">
+          <h4 class="text-sm font-extrabold text-slate-800 mb-4">各方案總點數排行比較</h4>
+          <div class="space-y-3">
+            ${planScores.map((item, idx) => {
+              const pct = Math.max(4, Math.round((item.totalPoints / maxPts) * 100));
+              const isFirst = idx === 0;
+              return `
+                <div>
+                  <div class="flex items-center justify-between text-xs mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="w-5 text-center font-bold ${isFirst ? 'text-cathay-600' : 'text-slate-400'}">#${idx + 1}</span>
+                      <span>${item.plan.emoji}</span>
+                      <span class="font-bold ${isFirst ? 'text-slate-900' : 'text-slate-700'}">${item.plan.name}</span>
+                      ${isFirst ? '<span class="px-1.5 py-0.5 rounded bg-cathay-50 text-cathay-700 text-[10px] font-bold">最佳</span>' : ''}
+                    </div>
+                    <div class="font-bold ${isFirst ? 'text-cathay-600' : 'text-slate-700'}">
+                      ${formatNumber(item.totalPoints)} 點
+                      <span class="text-[11px] font-normal text-slate-400 ml-1">(${item.effectiveRate}%)</span>
+                    </div>
+                  </div>
+                  <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 ${isFirst ? 'bg-cathay-500' : 'bg-slate-300'}" style="width: ${pct}%"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 9. 2026 OVERVIEW DIRECTORY
+    // =========================================================================
+    function setOverviewFilter(planId) {
+      state.overviewFilter = planId;
+      renderOverview();
+    }
+
+    function jumpToMerchant(name) {
+      switchTab('search');
+      selectQuickPick(name);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderOverview() {
+      const filtersEl = document.getElementById('overview-filters');
+      const gridEl = document.getElementById('overview-grid');
+
+      const planList = Object.values(PLANS);
+      filtersEl.innerHTML = [
+        `<button onclick="setOverviewFilter('all')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${state.overviewFilter === 'all' ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">全部方案</button>`,
+        ...planList.map(p => `
+          <button onclick="setOverviewFilter('${p.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${state.overviewFilter === p.id ? 'bg-cathay-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+            <span>${p.emoji}</span>
+            <span>${p.name}</span>
+          </button>
+        `),
+      ].join('');
+
+      const visiblePlans = state.overviewFilter === 'all'
+        ? planList
+        : planList.filter(p => p.id === state.overviewFilter);
+
+      gridEl.innerHTML = visiblePlans.map(plan => {
+        const unlocked = isPlanUnlocked(plan.id);
+        let rateLabel = '';
+        if (plan.id === 'birthday') rateLabel = '3.5% / 10%';
+        else if (plan.type === 'dynamic') rateLabel = `${LEVEL_RATES[state.level]}%`;
+        else rateLabel = `${plan.fixedRate}%`;
+
+        // Group merchants belonging to this plan by category
+        const matchingMerchants = MERCHANTS.filter(m => m.plans.some(p => p.planId === plan.id));
+        const grouped = {};
+        for (const m of matchingMerchants) {
+          if (!grouped[m.category]) grouped[m.category] = [];
+          grouped[m.category].push(m);
+        }
+
+        return `
+          <div class="bg-white rounded-2xl p-5 shadow-soft border border-slate-200/80 flex flex-col ${!unlocked ? 'opacity-80' : ''}">
+            <div class="flex items-start justify-between gap-3 pb-3.5 mb-3.5 border-b border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl ${plan.badgeBg} border ${plan.badgeBorder} flex items-center justify-center text-2xl shrink-0">
+                  ${plan.emoji}
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-base font-extrabold text-slate-900">${plan.name}</h3>
+                    ${!unlocked ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">未開啟</span>' : ''}
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5">${plan.desc}</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg text-sm font-extrabold ${plan.badgeBg} ${plan.badgeText} border ${plan.badgeBorder} shrink-0">
+                ${rateLabel}
+              </span>
+            </div>
+
+            <div class="space-y-3 flex-1">
+              ${Object.entries(grouped).map(([cat, list]) => `
+                <div>
+                  <div class="text-[11px] font-bold text-slate-400 mb-1.5">${cat}</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    ${list.map(m => {
+                      const pObj = m.plans.find(p => p.planId === plan.id);
+                      const rateTag = pObj.customRate ? ` <span class="opacity-75">${pObj.customRate}%</span>` : '';
+                      return `
+                        <button
+                          onclick="jumpToMerchant('${m.name.replace(/'/g, "\\'")}')"
+                          class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-50 hover:bg-cathay-50 text-slate-700 hover:text-cathay-700 border border-slate-200/70 hover:border-cathay-200 transition-colors text-left"
+                        >
+                          ${m.name}${rateTag}
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // =========================================================================
+    // 10. EVENT LISTENERS & INITIALIZATION
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      initQuickPicks();
+      lucide.createIcons();
+
+      // Main search input events
+      const searchInput = document.getElementById('search-input');
+      searchInput.addEventListener('input', e => handleSearchInput(e.target.value));
+      searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') executeSearch();
+        if (e.key === 'Escape') hideDropdown('search-dropdown');
+      });
+
+      // Calculator merchant input events
+      const calcInput = document.getElementById('calc-merchant-input');
+      calcInput.addEventListener('input', e => handleCalcMerchantInput(e.target.value));
+      calcInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('calc-amount-input').focus();
+        if (e.key === 'Escape') hideDropdown('calc-dropdown');
+      });
+
+      document.getElementById('calc-amount-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') addTransaction();
+      });
+
+      // Close dropdowns on outside click
+      document.addEventListener('click', e => {
+        if (!e.target.closest('#search-input') && !e.target.closest('#search-dropdown')) {
+          hideDropdown('search-dropdown');
+        }
+        if (!e.target.closest('#calc-merchant-input') && !e.target.closest('#calc-dropdown')) {
+          hideDropdown('calc-dropdown');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
